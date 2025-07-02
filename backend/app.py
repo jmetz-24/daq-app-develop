@@ -171,6 +171,41 @@ def shape_profile_route():
     except Exception as e:
         return jsonify({'error': f"An error occurred during shaping: {e}"}), 500
 
+@app.route('/export-csv', methods=['POST'])
+def export_csv_route():
+    """
+    Exports a given profile (frequency and psd data) to a CSV file.
+    Expects JSON data with 'freq' and 'psd' keys.
+    """
+    data = request.json
+    if not data or 'freq' not in data or 'psd' not in data:
+        return jsonify({'error': 'Missing frequency or psd data for export'}), 400
+    
+    freq = data['freq']
+    psd = data['psd']
+    
+    # Use io.StringIO to create a text buffer in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write the header
+    writer.writerow(['Frequency (Hz)', 'Amplitude (g^2/Hz)'])
+    
+    # Write the data rows
+    for f, p in zip(freq, psd):
+        writer.writerow([f, p])
+        
+    # Go back to the beginning of the buffer
+    output.seek(0)
+    
+    # Send the buffer as a file attachment
+    return send_file(
+        io.BytesIO(output.read().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='shaped_profile.csv'
+    )
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
 
