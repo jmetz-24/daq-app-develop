@@ -26,4 +26,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Invoke the handler in main.js and pass the arguments along
     return ipcRenderer.invoke('flask:shapeProfile', args);
   },
+
+  exportProfileCSV: (profileData) => {
+    // Invoke the handler in main.js and pass the profile data along
+    return ipcRenderer.invoke('flask:exportProfileCSV', profileData);
+  }
 });
