@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('node:path');
 const axios = require('axios'); // Import axios here
 
+
 // Define the Flask server URL in the main process
 const API_URL = 'http://127.0.0.1:5001';
 
@@ -113,6 +114,39 @@ app.on('ready', () => {
         return { status: 'success', data: response.data };
     } catch (error) {
         throw new Error(error.response?.data?.error || 'Shaping failed in backend');
+    }
+  });
+
+  // Handler for export shaped profile as csv
+  // It listens on the 'flask:exportProfileCSV' channel from the preload script.
+  ipcMain.handle('flask:exportProfileCSV', async (event, profileData) => {
+    try {
+      // Forward the request to the Python backend
+      const response = await axios.post(`${API_URL}/export-csv`, profileData, {
+        responseType: 'arraybuffer' // Important for handling file data
+      });
+
+      // --- FIX: Get the window from the event sender ---
+      const win = BrowserWindow.fromWebContents(event.sender);
+
+      // Show a "Save" dialog to the user, associated with the correct window
+      const { filePath } = await dialog.showSaveDialog(win, {
+        title: 'Save Shaped Profile',
+        defaultPath: 'shaped_profile.csv',
+        filters: [{ name: 'CSV Files', extensions: ['csv'] }]
+      });
+
+      // If the user selected a path, write the file
+      if (filePath) {
+        fs.writeFileSync(filePath, Buffer.from(response.data));
+        return { success: true, path: filePath };
+      }
+
+      return { success: false, reason: 'Save dialog canceled' };
+
+    } catch (error) {
+      console.error('Failed to export CSV via main process:', error.message);
+      return { success: false, error: error.message };
     }
   });
 
