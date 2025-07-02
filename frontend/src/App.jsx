@@ -11,6 +11,7 @@ import { AnalysisResults }      from './components/AnalysisResults';
 import { TestSimulationForm }   from './components/TestSimulationForm';
 import { ShapedResultDisplay }  from './components/ShapedResultDisplay';
 
+
 const App = () => {
   const [filePath, setFilePath] = useState(null);
   const [fileName, setFileName] = useState('');
@@ -159,27 +160,6 @@ const App = () => {
       setShaping(false);
   };
 
-  const handleExportCSV = async () => {
-    if (!shapedResult || !shapedResult.reduced) {
-      alert('No reduced profile data available to export.');
-      return;
-    }
-    try {
-      const result = await window.electronAPI.exportProfileCSV({
-        freq: shapedResult.reduced.freq,
-        psd: shapedResult.reduced.psd,
-      });
-      if (!result.success) {
-        throw new Error(result.error || 'Backend export failed.');
-      }
-      console.log('Export command sent successfully.');
-    } catch (err) {
-      setError(`Export failed: ${err.message}`);
-      console.error('Error exporting CSV:', err);
-      alert('Failed to export CSV. See console for details.');
-    }
-  };
-
   const toggleChannel = (channelId) => {
     if (isRenameMode) return;
     const isInput = inputChannelIds.includes(channelId);
@@ -254,21 +234,7 @@ const App = () => {
           {results && ( <AnalysisResults results={results} plotSettings={plotSettings} onPlotSettingChange={handlePlotSettingChange} accelerationUnit={accelerationUnit} /> )}
           {results && ( <TestSimulationForm outputChannels={outputChannelNames} shapingChannel={shapingChannel} setShapingChannel={setShapingChannel} profileType={profileType} setProfileType={setProfileType} profileName={profileName} setProfileName={setProfileName} onShapeProfile={handleShapeProfile} shaping={shaping} /> )}
           {shaping && <div className="text-center py-12"><Cpu className="w-12 h-12 text-green-600 animate-spin mx-auto mb-4" /><h3 className="text-xl font-semibold">Shaping Profile...</h3></div>}
-          {shapedResult && (
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-xl font-semibold text-gray-700">Shaped Profile Results</h2>
-                {/* --- NEW: Export Button --- */}
-                <button
-                  onClick={handleExportCSV}
-                  className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
-                >
-                  Export to CSV
-                </button>
-              </div>
-              <ShapedResultDisplay shapedResult={shapedResult} />
-            </div>
-        )}
+          {shapedResult && <ShapedResultDisplay shapedResult={shapedResult} />}
         </div>
       </div>
     </div>

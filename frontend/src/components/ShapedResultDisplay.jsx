@@ -5,42 +5,32 @@ import { Card } from './ui/Card';
 import { CardHeader } from './ui/CardHeader';
 
 export const ShapedResultDisplay = ({ shapedResult }) => {
-  
-
   // Render random vibration profile plot
   if (shapedResult.original.psd) {
-    const plotTraces = [
-        { x: shapedResult.original.freq, y: shapedResult.original.psd, type: 'scatter', mode: 'lines', line: { dash: 'dash' }, name: `Input: ${shapedResult.original.name} (${shapedResult.grms.input.toFixed(2)} Grms)` },
-        { x: shapedResult.shaped.freq, y: shapedResult.shaped.psd, type: 'scatter', mode: 'lines', name: `${shapedResult.shaped.name} (${shapedResult.grms.shaped.toFixed(2)} Grms)` }
-    ];
-
-    if (shapedResult.reduced) {
-        plotTraces.push({ x: shapedResult.reduced.freq, y: shapedResult.reduced.psd, type: 'scatter', mode: 'lines', name: `${shapedResult.reduced.name} (${shapedResult.grms.reduced.toFixed(2)} Grms)` });
-    }
-
     return (
       <Card>
         <CardHeader title="Shaped Profile Result" />
-        <div className="p-4">
-            <Plot
-            data={plotTraces}
-            layout={{
-                xaxis: { title: 'Frequency (Hz)', type: 'log' },
-                yaxis: { title: `PSD (${shapedResult.original.units})`, type: 'log' },
-                font: { color: '#576175', family: 'Inter' },
-                legend: {
-                orientation: "h",
-                yanchor: "top",
-                y: -0.2,
-                xanchor: "center",
-                x: 0.5
-                },
-                margin: { t: 5 }
-            }}
-            useResizeHandler={true}
-            style={{ width: '100%', height: '400px' }}
-            />
-        </div>
+        <Plot
+          data={[
+            { x: shapedResult.original.freq, y: shapedResult.original.psd, type: 'scatter', mode: 'lines', line: { dash: 'dash' }, name: `Input: ${shapedResult.original.name}` },
+            { x: shapedResult.shaped.freq, y: shapedResult.shaped.psd, type: 'scatter', mode: 'lines', name: `${shapedResult.shaped.name} (Output)` }
+          ]}
+          layout={{
+            xaxis: { title: 'Frequency (Hz)', type: 'log' },
+            yaxis: { title: `PSD (${shapedResult.original.units})`, type: 'log' },
+            font: { color: '#576175', family: 'Inter' },
+            legend: {
+              orientation: "h", // Display legend horizontally
+              yanchor: "top",
+              y: -0.2,        // Position legend below the plot area
+              xanchor: "center",
+              x: 0.5          // Center the legend horizontally
+            },
+            margin: { t: 5 }
+          }}
+          useResizeHandler={true}
+          style={{ width: '100%', height: '400px' }}
+        />
       </Card>
     );
   }
